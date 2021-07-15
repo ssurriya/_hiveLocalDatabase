@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -23,6 +24,7 @@ class AddEditEmployeeState extends State<AddOrEditEmployeeScreen> {
   TextEditingController controllerName = new TextEditingController();
   TextEditingController controllerSalary = new TextEditingController();
   TextEditingController controllerAge = new TextEditingController();
+  final databaseRef = FirebaseDatabase.instance.reference();
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,8 @@ class AddEditEmployeeState extends State<AddOrEditEmployeeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  const Text("Employee Salary:", style: TextStyle(fontSize: 18)),
+                  const Text("Employee Salary:",
+                      style: TextStyle(fontSize: 18)),
                   const SizedBox(width: 20),
                   Expanded(
                     child: TextField(
@@ -106,6 +109,12 @@ class AddEditEmployeeState extends State<AddOrEditEmployeeScreen> {
                           empAge: getEmpAge);
                       var box = await Hive.openBox<Employee>('employee');
                       box.add(addEmployee);
+                      // ignore: unnecessary_string_interpolations
+                      // databaseRef.child("$getEmpName").set({
+                      //   "name": "$getEmpName",
+                      //   "age": "$getEmpAge",
+                      //   "salary": "$getEmpSalary"
+                      // });
                     }
                     Navigator.pushAndRemoveUntil(
                         context,

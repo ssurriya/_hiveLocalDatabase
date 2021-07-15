@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "607156804536",
+    "project_id": "surriya-92f29",
+    "storage_bucket": "surriya-92f29.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:607156804536:android:acefbcb05a82a9ac37cd4d",
+        "android_client_info": {
+          "package_name": "com.example.u_project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "607156804536-ps9ob0kr8idn70sikq66bk988pjd08n8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiG8jzrsgz5w_e5IlfVH-U6PMMwnhTgp0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "607156804536-ps9ob0kr8idn70sikq66bk988pjd08n8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

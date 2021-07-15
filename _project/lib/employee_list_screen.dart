@@ -1,5 +1,11 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:connectivity/connectivity.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 import 'add_or_edit_employee_screen.dart';
 import 'employee.dart';
 
@@ -12,6 +18,12 @@ class EmployeesListScreen extends StatefulWidget {
 
 class EmployeesListState extends State<EmployeesListScreen> {
   List<Employee> listEmployees = [];
+  bool _isDeviceConnectWithInternet = false;
+  final databaseRef = FirebaseDatabase.instance.reference();
+
+  // ignore: unused_field
+  Map _source = {ConnectivityResult.none: false};
+  final MyConnectivity _connectivity = MyConnectivity.instance;
 
   void getEmployees() async {
     final box = await Hive.openBox<Employee>('employee');
@@ -23,11 +35,44 @@ class EmployeesListState extends State<EmployeesListScreen> {
   @override
   void initState() {
     getEmployees();
+    _connectivity.initialise();
+    _connectivity.myStream.listen((source) {
+      setState(() => _source = source);
+    });
     super.initState();
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  _connectivityStatus() {
+    switch (_source.keys.toList()[0]) {
+      case ConnectivityResult.none:
+        break;
+      case ConnectivityResult.mobile:
+        _updateValueWithFirebase();
+        break;
+      case ConnectivityResult.wifi:
+        _updateValueWithFirebase();
+        break;
+    }
+  }
+
+  _updateValueWithFirebase() {
+    listEmployees.map((e) {
+      databaseRef.child("${e.empName}").set({
+        "name": "${e.empName}",
+        "age": "${e.empAge}",
+        "salary": "${e.empSalary}"
+      });
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    _connectivityStatus();
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -97,6 +142,9 @@ class EmployeesListState extends State<EmployeesListScreen> {
                                   box.deleteAt(position);
                                   setState(
                                       () => {listEmployees.removeAt(position)});
+                                  databaseRef
+                                      .child(getEmployee.empName)
+                                      .remove();
                                 }),
                           ),
                           Align(
@@ -112,4 +160,42 @@ class EmployeesListState extends State<EmployeesListScreen> {
       ),
     );
   }
+}
+
+class MyConnectivity {
+  MyConnectivity._internal();
+
+  static final MyConnectivity _instance = MyConnectivity._internal();
+
+  static MyConnectivity get instance => _instance;
+
+  Connectivity connectivity = Connectivity();
+
+  StreamController controller = StreamController.broadcast();
+
+  Stream get myStream => controller.stream;
+
+  void initialise() async {
+    ConnectivityResult result = await connectivity.checkConnectivity();
+    _checkStatus(result);
+    connectivity.onConnectivityChanged.listen((result) {
+      _checkStatus(result);
+    });
+  }
+
+  void _checkStatus(ConnectivityResult result) async {
+    bool isOnline = false;
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        isOnline = true;
+      } else
+        isOnline = false;
+    } on SocketException catch (_) {
+      isOnline = false;
+    }
+    controller.sink.add({result: isOnline});
+  }
+
+  void disposeStream() => controller.close();
 }
